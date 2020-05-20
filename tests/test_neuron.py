@@ -1,5 +1,5 @@
-from sentipy import activations
-from sentipy.fapar import Neuron
+from sentipy.lib import activations
+from sentipy.lib.neuralnet import Neuron
 import numpy as np
 
 def test_neuron_tansig_activation():

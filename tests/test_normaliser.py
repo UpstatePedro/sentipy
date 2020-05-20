@@ -1,4 +1,4 @@
-from sentipy.fapar import Normaliser
+from sentipy.lib.preprocessing import Normaliser
 
 
 def test_normaliser_minimum():

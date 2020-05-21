@@ -4,56 +4,42 @@ import numpy as np
 
 from sentipy.lib.neuralnet import Neuron
 from sentipy.lib.preprocessing import Normaliser
+from sentipy.settings import DEFAULT_BAND_SEQUENCE
 
 
 class FaparCalculator:
-
-    DEFAULT_BAND_SEQUENCE = [
-        "B03",
-        "B04",
-        "B05",
-        "B06",
-        "B07",
-        "B8a",
-        "B11",
-        "B12",
-        "COS_VIEW_ZENITH",
-        "COS_SUN_ZENITH",
-        "COS_REL_AZIMUTH"
-    ]
-
     VALIDATION_RANGES = {
         "B03": {
             "min": 0.,
-            "max": 1.
+            "max": 0.263
         },
         "B04": {
             "min": 0.,
-            "max": 1.
+            "max": 0.300
         },
         "B05": {
             "min": 0.,
-            "max": 1.
+            "max": 0.315
         },
         "B06": {
             "min": 0.,
-            "max": 1.
+            "max": 0.619
         },
         "B07": {
-            "min": 0.,
-            "max": 1.
+            "min": 0.004,
+            "max": 0.764
         },
         "B8a": {
-            "min": 0.,
-            "max": 1.
+            "min": 0.017,
+            "max": 0.792
         },
         "B11": {
-            "min": 0.,
-            "max": 1.
+            "min": 0.006,
+            "max": 0.503
         },
         "B12": {
             "min": 0.,
-            "max": 1.
+            "max": 0.503
         },
         "Cos(view zenith)": {
             "min": 0.,
@@ -64,7 +50,7 @@ class FaparCalculator:
             "max": 1.
         },
         "Cos(rel. azimuth)": {
-            "min": 0.,
+            "min": -1.,
             "max": 1.
         },
     }
@@ -139,7 +125,8 @@ class FaparCalculator:
             activation='linear'
         )
 
-    def run(self, input_arr: np.ndarray, band_sequence: List[str] = DEFAULT_BAND_SEQUENCE, validate: bool = True) -> Union[float, np.float]:
+    def run(self, input_arr: np.ndarray, band_sequence: List[str] = DEFAULT_BAND_SEQUENCE, validate: bool = True) -> \
+    Union[float, np.float]:
         """Run the calculator on an input array
 
         By default, the calculator expects only the following bands to be passed in the sequence below:
@@ -164,7 +151,7 @@ class FaparCalculator:
         :param validate: Flag for whether or not to apply validation ranges to the inputs
         :return: Scalar estimate of FAPAR for the input array
         """
-        band_idxs = [band_sequence.index(elem) for elem in self.DEFAULT_BAND_SEQUENCE]
+        band_idxs = [band_sequence.index(elem) for elem in DEFAULT_BAND_SEQUENCE]
         ordered_arr = np.array([input_arr[idx] for idx in band_idxs])
         if validate:
             ordered_arr = self._validate(ordered_arr)
@@ -174,10 +161,13 @@ class FaparCalculator:
         return y
 
     def _validate(self, input_arr: np.ndarray) -> np.ndarray:
-        """
+        """Validate input band values against the 'definition domain for inputs'
 
-        :param input_arr:
-        :return:
+        NB. We validate against the min & max input values, but we do NOT check that inputs lie in valid cells of the
+        convex hull
+
+        :param input_arr: Band values to be validated
+        :return: Band values after passing through validation. ValueError is raised if any values fail.
         """
         validation_ranges = self.VALIDATION_RANGES
         for band_index, band_name in enumerate(validation_ranges):
@@ -190,10 +180,10 @@ class FaparCalculator:
         return input_arr
 
     def _normalise(self, input_arr: np.ndarray) -> np.ndarray:
-        """
+        """Normalise input band values to predefined ranges before passing to the neural network for calculation.
 
-        :param input_arr:
-        :return:
+        :param input_arr: Band values to be normalised
+        :return: Normalised band values
         """
         return np.array([
             self.norm_b3.normalise(input_arr[0]),
@@ -210,6 +200,11 @@ class FaparCalculator:
         ])
 
     def _compute(self, normalised_arr: np.ndarray) -> np.float:
+        """Calculates normalised FAPAR from normalised input band values
+
+        :param normalised_arr: Normalised band values
+        :return: Normalised FAPAR estimate
+        """
         # Layer 1
         n1 = self.neuron_1.forward(normalised_arr)
         n2 = self.neuron_2.forward(normalised_arr)

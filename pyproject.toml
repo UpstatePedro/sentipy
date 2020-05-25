@@ -1,7 +1,7 @@
 [tool.poetry]
 name = "sentipy"
 version = "0.1.0"
-description = ""
+description = "Python implementations of Sentinel 2 Toolbox L2 products & spectral indices"
 authors = ["UpstatePedro"]
 
 [tool.poetry.dependencies]

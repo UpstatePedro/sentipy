@@ -5,6 +5,7 @@ description = "Python implementations of Sentinel 2 Toolbox L2 products & spectr
 license = "GPL-3.0-only"
 authors = ["UpstatePedro"]
 readme = "README.md"
+repository = "https://github.com/UpstatePedro/sentipy"
 
 [tool.poetry.dependencies]
 python = "^3.6"

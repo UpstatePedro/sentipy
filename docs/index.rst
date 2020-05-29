@@ -10,6 +10,7 @@ Welcome to sentipy's documentation!
    :maxdepth: 4
    :caption: Contents:
 
+   readme
    sentipy
 
 

@@ -12,4 +12,4 @@ Documentation
    :target: https://sentipy.readthedocs.io/en/latest/?badge=latest
    :alt: Documentation Status
 
-Documentation for the project is hosted at `Read the Docs <sentipy.rtfd.io>`_
+Documentation for the project is hosted at `Read the Docs <https://sentipy.rtfd.io>`_

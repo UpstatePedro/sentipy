@@ -1,4 +1,7 @@
-DEFAULT_BAND_SEQUENCE = [
+"""Settings and configuration that apply across the whole project
+"""
+
+DEFAULT_BAND_SEQUENCE = (
     "B03",
     "B04",
     "B05",
@@ -10,4 +13,5 @@ DEFAULT_BAND_SEQUENCE = [
     "COS_VIEW_ZENITH",
     "COS_SUN_ZENITH",
     "COS_REL_AZIMUTH"
-]
+)
+"""Default sequence of Sentinel-2 bands & meta-data assumed throughout project"""

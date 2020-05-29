@@ -1,3 +1,6 @@
+"""Home for the objects & logic that deal with the calculation of FAPAR
+"""
+
 from typing import Union, List
 
 import numpy as np

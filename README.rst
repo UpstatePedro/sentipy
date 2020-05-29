@@ -1,5 +1,3 @@
-sentipy
-=======
 
 Python implementations of Sentinel 2 Toolbox L2 products & spectral indices
 

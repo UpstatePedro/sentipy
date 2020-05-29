@@ -1,0 +1,318 @@
+
+<!DOCTYPE html>
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>sentipy.fapar &#8212; sentipy  documentation</title>
+    <link rel="stylesheet" href="../../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    <script id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
+    <script src="../../_static/jquery.js"></script>
+    <script src="../../_static/underscore.js"></script>
+    <script src="../../_static/doctools.js"></script>
+    <script src="../../_static/language_data.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+   
+  <link rel="stylesheet" href="../../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <h1>Source code for sentipy.fapar</h1><div class="highlight"><pre>
+<span></span><span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Union</span><span class="p">,</span> <span class="n">List</span>
+
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+
+<span class="kn">from</span> <span class="nn">sentipy.lib.neuralnet</span> <span class="kn">import</span> <span class="n">Neuron</span>
+<span class="kn">from</span> <span class="nn">sentipy.lib.preprocessing</span> <span class="kn">import</span> <span class="n">Normaliser</span>
+<span class="kn">from</span> <span class="nn">sentipy.settings</span> <span class="kn">import</span> <span class="n">DEFAULT_BAND_SEQUENCE</span>
+
+
+<div class="viewcode-block" id="FaparCalculator"><a class="viewcode-back" href="../../sentipy.html#sentipy.fapar.FaparCalculator">[docs]</a><span class="k">class</span> <span class="nc">FaparCalculator</span><span class="p">:</span>
+    <span class="n">VALIDATION_RANGES</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="s2">&quot;B03&quot;</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s2">&quot;min&quot;</span><span class="p">:</span> <span class="mf">0.</span><span class="p">,</span>
+            <span class="s2">&quot;max&quot;</span><span class="p">:</span> <span class="mf">0.263</span>
+        <span class="p">},</span>
+        <span class="s2">&quot;B04&quot;</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s2">&quot;min&quot;</span><span class="p">:</span> <span class="mf">0.</span><span class="p">,</span>
+            <span class="s2">&quot;max&quot;</span><span class="p">:</span> <span class="mf">0.300</span>
+        <span class="p">},</span>
+        <span class="s2">&quot;B05&quot;</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s2">&quot;min&quot;</span><span class="p">:</span> <span class="mf">0.</span><span class="p">,</span>
+            <span class="s2">&quot;max&quot;</span><span class="p">:</span> <span class="mf">0.315</span>
+        <span class="p">},</span>
+        <span class="s2">&quot;B06&quot;</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s2">&quot;min&quot;</span><span class="p">:</span> <span class="mf">0.</span><span class="p">,</span>
+            <span class="s2">&quot;max&quot;</span><span class="p">:</span> <span class="mf">0.619</span>
+        <span class="p">},</span>
+        <span class="s2">&quot;B07&quot;</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s2">&quot;min&quot;</span><span class="p">:</span> <span class="mf">0.004</span><span class="p">,</span>
+            <span class="s2">&quot;max&quot;</span><span class="p">:</span> <span class="mf">0.764</span>
+        <span class="p">},</span>
+        <span class="s2">&quot;B8a&quot;</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s2">&quot;min&quot;</span><span class="p">:</span> <span class="mf">0.017</span><span class="p">,</span>
+            <span class="s2">&quot;max&quot;</span><span class="p">:</span> <span class="mf">0.792</span>
+        <span class="p">},</span>
+        <span class="s2">&quot;B11&quot;</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s2">&quot;min&quot;</span><span class="p">:</span> <span class="mf">0.006</span><span class="p">,</span>
+            <span class="s2">&quot;max&quot;</span><span class="p">:</span> <span class="mf">0.503</span>
+        <span class="p">},</span>
+        <span class="s2">&quot;B12&quot;</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s2">&quot;min&quot;</span><span class="p">:</span> <span class="mf">0.</span><span class="p">,</span>
+            <span class="s2">&quot;max&quot;</span><span class="p">:</span> <span class="mf">0.503</span>
+        <span class="p">},</span>
+        <span class="s2">&quot;Cos(view zenith)&quot;</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s2">&quot;min&quot;</span><span class="p">:</span> <span class="mf">0.</span><span class="p">,</span>
+            <span class="s2">&quot;max&quot;</span><span class="p">:</span> <span class="mf">1.</span>
+        <span class="p">},</span>
+        <span class="s2">&quot;Cos(sun zenith)&quot;</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s2">&quot;min&quot;</span><span class="p">:</span> <span class="mf">0.</span><span class="p">,</span>
+            <span class="s2">&quot;max&quot;</span><span class="p">:</span> <span class="mf">1.</span>
+        <span class="p">},</span>
+        <span class="s2">&quot;Cos(rel. azimuth)&quot;</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s2">&quot;min&quot;</span><span class="p">:</span> <span class="o">-</span><span class="mf">1.</span><span class="p">,</span>
+            <span class="s2">&quot;max&quot;</span><span class="p">:</span> <span class="mf">1.</span>
+        <span class="p">},</span>
+    <span class="p">}</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Calculates FAPAR from Sentinel-2 imagery</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">norm_b3</span> <span class="o">=</span> <span class="n">Normaliser</span><span class="p">(</span><span class="n">x_min</span><span class="o">=</span><span class="mf">0.</span><span class="p">,</span> <span class="n">x_max</span><span class="o">=</span><span class="mf">0.253061520471542</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">norm_b4</span> <span class="o">=</span> <span class="n">Normaliser</span><span class="p">(</span><span class="n">x_min</span><span class="o">=</span><span class="mf">0.</span><span class="p">,</span> <span class="n">x_max</span><span class="o">=</span><span class="mf">0.290393577911328</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">norm_b5</span> <span class="o">=</span> <span class="n">Normaliser</span><span class="p">(</span><span class="n">x_min</span><span class="o">=</span><span class="mf">0.</span><span class="p">,</span> <span class="n">x_max</span><span class="o">=</span><span class="mf">0.305398915248555</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">norm_b6</span> <span class="o">=</span> <span class="n">Normaliser</span><span class="p">(</span><span class="n">x_min</span><span class="o">=</span><span class="mf">0.006637972542253</span><span class="p">,</span> <span class="n">x_max</span><span class="o">=</span><span class="mf">0.608900395797889</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">norm_b7</span> <span class="o">=</span> <span class="n">Normaliser</span><span class="p">(</span><span class="n">x_min</span><span class="o">=</span><span class="mf">0.013972727018939</span><span class="p">,</span> <span class="n">x_max</span><span class="o">=</span><span class="mf">0.753827384322927</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">norm_b8a</span> <span class="o">=</span> <span class="n">Normaliser</span><span class="p">(</span><span class="n">x_min</span><span class="o">=</span><span class="mf">0.026690138082061</span><span class="p">,</span> <span class="n">x_max</span><span class="o">=</span><span class="mf">0.782011770669178</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">norm_b11</span> <span class="o">=</span> <span class="n">Normaliser</span><span class="p">(</span><span class="n">x_min</span><span class="o">=</span><span class="mf">0.016388074192258</span><span class="p">,</span> <span class="n">x_max</span><span class="o">=</span><span class="mf">0.493761397883092</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">norm_b12</span> <span class="o">=</span> <span class="n">Normaliser</span><span class="p">(</span><span class="n">x_min</span><span class="o">=</span><span class="mf">0.</span><span class="p">,</span> <span class="n">x_max</span><span class="o">=</span><span class="mf">0.493025984460231</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">norm_cos_view_zenith</span> <span class="o">=</span> <span class="n">Normaliser</span><span class="p">(</span><span class="n">x_min</span><span class="o">=</span><span class="mf">0.918595400582046</span><span class="p">,</span> <span class="n">x_max</span><span class="o">=</span><span class="mf">0.99999999999139</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">norm_cos_sun_zenith</span> <span class="o">=</span> <span class="n">Normaliser</span><span class="p">(</span><span class="n">x_min</span><span class="o">=</span><span class="mf">0.342022871159208</span><span class="p">,</span> <span class="n">x_max</span><span class="o">=</span><span class="mf">0.936206429175402</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">norm_cos_rel_azimuth</span> <span class="o">=</span> <span class="n">Normaliser</span><span class="p">(</span><span class="n">x_min</span><span class="o">=-</span><span class="mf">0.999999982118044</span><span class="p">,</span> <span class="n">x_max</span><span class="o">=</span><span class="mf">0.999999998910077</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">norm_fapar</span> <span class="o">=</span> <span class="n">Normaliser</span><span class="p">(</span><span class="n">x_min</span><span class="o">=</span><span class="mf">0.000153013463222</span><span class="p">,</span> <span class="n">x_max</span><span class="o">=</span><span class="mf">0.977135096979553</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">neuron_1</span> <span class="o">=</span> <span class="n">Neuron</span><span class="p">(</span>
+            <span class="n">weights</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span>
+                <span class="mf">0.268714454733421</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.205473108029835</span><span class="p">,</span> <span class="mf">0.281765694196018</span><span class="p">,</span> <span class="mf">1.33744341225598</span><span class="p">,</span> <span class="mf">0.390319212938497</span><span class="p">,</span>
+                <span class="o">-</span><span class="mf">3.61271434220335</span><span class="p">,</span> <span class="mf">0.222530960987244</span><span class="p">,</span> <span class="mf">0.821790549667255</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.093664567310731</span><span class="p">,</span> <span class="mf">0.019290146147447</span><span class="p">,</span>
+                <span class="mf">0.037364446377188</span><span class="p">,</span>
+            <span class="p">]),</span>
+            <span class="n">bias</span><span class="o">=-</span><span class="mf">0.88706836404028</span><span class="p">,</span>
+            <span class="n">activation</span><span class="o">=</span><span class="s1">&#39;tansig&#39;</span>
+        <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">neuron_2</span> <span class="o">=</span> <span class="n">Neuron</span><span class="p">(</span>
+            <span class="n">weights</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span>
+                <span class="o">-</span><span class="mf">0.248998054599707</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.571461305473124</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.369957603466673</span><span class="p">,</span> <span class="mf">0.246031694650909</span><span class="p">,</span> <span class="mf">0.332536215252841</span><span class="p">,</span>
+                <span class="mf">0.438269896208887</span><span class="p">,</span> <span class="mf">0.81900055189045</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.93493149905931</span><span class="p">,</span> <span class="mf">0.082716247651866</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.286978634108328</span><span class="p">,</span>
+                <span class="o">-</span><span class="mf">0.035890968351662</span>
+            <span class="p">]),</span>
+            <span class="n">bias</span><span class="o">=</span><span class="mf">0.320126471197199</span><span class="p">,</span>
+            <span class="n">activation</span><span class="o">=</span><span class="s1">&#39;tansig&#39;</span>
+        <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">neuron_3</span> <span class="o">=</span> <span class="n">Neuron</span><span class="p">(</span>
+            <span class="n">weights</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span>
+                <span class="o">-</span><span class="mf">0.16406357531588</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.126303285737763</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.253670784366822</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.321162835049381</span><span class="p">,</span> <span class="mf">0.06708228797358</span><span class="p">,</span>
+                <span class="mf">2.02983228865526</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.023141228827722</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.553176625657559</span><span class="p">,</span> <span class="mf">0.059285451897783</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.034334454541432</span><span class="p">,</span>
+                <span class="o">-</span><span class="mf">0.031776704097009</span>
+            <span class="p">]),</span>
+            <span class="n">bias</span><span class="o">=</span><span class="mf">0.610523702500117</span><span class="p">,</span>
+            <span class="n">activation</span><span class="o">=</span><span class="s1">&#39;tansig&#39;</span>
+        <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">neuron_4</span> <span class="o">=</span> <span class="n">Neuron</span><span class="p">(</span>
+            <span class="n">weights</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span>
+                <span class="mf">0.130240753003835</span><span class="p">,</span> <span class="mf">0.236781035723321</span><span class="p">,</span> <span class="mf">0.131811664093253</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.250181799267664</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.011364149953286</span><span class="p">,</span>
+                <span class="o">-</span><span class="mf">1.85757321463352</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.146860751013916</span><span class="p">,</span> <span class="mf">0.528008831372352</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.046230769098303</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.034509608392235</span><span class="p">,</span>
+                <span class="mf">0.031884395036004</span>
+            <span class="p">]),</span>
+            <span class="n">bias</span><span class="o">=-</span><span class="mf">0.379156190833946</span><span class="p">,</span>
+            <span class="n">activation</span><span class="o">=</span><span class="s1">&#39;tansig&#39;</span>
+        <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">neuron_5</span> <span class="o">=</span> <span class="n">Neuron</span><span class="p">(</span>
+            <span class="n">weights</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span>
+                <span class="o">-</span><span class="mf">0.029929946166941</span><span class="p">,</span> <span class="mf">0.795804414040809</span><span class="p">,</span> <span class="mf">0.348025317624568</span><span class="p">,</span> <span class="mf">0.943567007518504</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.276341670431501</span><span class="p">,</span>
+                <span class="o">-</span><span class="mf">2.94659418014259</span><span class="p">,</span> <span class="mf">0.2894830735075</span><span class="p">,</span> <span class="mf">1.04400695044018</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.000413031960419</span><span class="p">,</span> <span class="mf">0.403331114840215</span><span class="p">,</span>
+                <span class="mf">0.068427130526696</span>
+            <span class="p">]),</span>
+            <span class="n">bias</span><span class="o">=</span><span class="mf">1.35302339669057</span><span class="p">,</span>
+            <span class="n">activation</span><span class="o">=</span><span class="s1">&#39;tansig&#39;</span>
+        <span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">neuron_6</span> <span class="o">=</span> <span class="n">Neuron</span><span class="p">(</span>
+            <span class="n">weights</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span>
+                <span class="mf">2.12603881106449</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.632044932794919</span><span class="p">,</span> <span class="mf">5.59899578720625</span><span class="p">,</span> <span class="mf">1.77044414057897</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.267879583604849</span>
+            <span class="p">]),</span>
+            <span class="n">bias</span><span class="o">=-</span><span class="mf">0.336431283973339</span><span class="p">,</span>
+            <span class="n">activation</span><span class="o">=</span><span class="s1">&#39;linear&#39;</span>
+        <span class="p">)</span>
+
+<div class="viewcode-block" id="FaparCalculator.run"><a class="viewcode-back" href="../../sentipy.html#sentipy.fapar.FaparCalculator.run">[docs]</a>    <span class="k">def</span> <span class="nf">run</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">input_arr</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">band_sequence</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="n">DEFAULT_BAND_SEQUENCE</span><span class="p">,</span> <span class="n">validate</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span> <span class="o">-&gt;</span> \
+    <span class="n">Union</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">float</span><span class="p">]:</span>
+        <span class="sd">&quot;&quot;&quot;Run the calculator on an input array</span>
+
+<span class="sd">        By default, the calculator expects only the following bands to be passed in the sequence below:</span>
+<span class="sd">        B03</span>
+<span class="sd">        B04</span>
+<span class="sd">        B05</span>
+<span class="sd">        B06</span>
+<span class="sd">        B07</span>
+<span class="sd">        B8a</span>
+<span class="sd">        B11</span>
+<span class="sd">        B12</span>
+<span class="sd">        COS_VIEW_ZENITH</span>
+<span class="sd">        COS_SUN_ZENITH</span>
+<span class="sd">        COS_REL_AZIMUTH</span>
+
+<span class="sd">        If band values are to be passed in a different set or sequence, the band_sequence parameter must be passed with</span>
+<span class="sd">        band names (matching those above) for each element in the input array.</span>
+<span class="sd">        eg. [&quot;extra_band_1&quot;, &quot;COS_SUN_ZENITH&quot;, &quot;B03&quot;, &quot;B04&quot;, ..., &quot;COS_REL_AZIMUTH&quot;, &quot;extra_band_2&quot;]</span>
+
+<span class="sd">        :param input_arr: Input values for the calculator to use</span>
+<span class="sd">        :param band_sequence: Names of bands included in the input array (names must match those used above for the required bands)</span>
+<span class="sd">        :param validate: Flag for whether or not to apply validation ranges to the inputs</span>
+<span class="sd">        :return: Scalar estimate of FAPAR for the input array</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">band_idxs</span> <span class="o">=</span> <span class="p">[</span><span class="n">band_sequence</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="n">elem</span><span class="p">)</span> <span class="k">for</span> <span class="n">elem</span> <span class="ow">in</span> <span class="n">DEFAULT_BAND_SEQUENCE</span><span class="p">]</span>
+        <span class="n">ordered_arr</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">input_arr</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span> <span class="k">for</span> <span class="n">idx</span> <span class="ow">in</span> <span class="n">band_idxs</span><span class="p">])</span>
+        <span class="k">if</span> <span class="n">validate</span><span class="p">:</span>
+            <span class="n">ordered_arr</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_validate</span><span class="p">(</span><span class="n">ordered_arr</span><span class="p">)</span>
+        <span class="n">normalised_arr</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_normalise</span><span class="p">(</span><span class="n">ordered_arr</span><span class="p">)</span>
+        <span class="n">y_norm</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_compute</span><span class="p">(</span><span class="n">normalised_arr</span><span class="p">)</span>
+        <span class="n">y</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">norm_fapar</span><span class="o">.</span><span class="n">denormalise</span><span class="p">(</span><span class="n">y_norm</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">y</span></div>
+
+    <span class="k">def</span> <span class="nf">_validate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">input_arr</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Validate input band values against the &#39;definition domain for inputs&#39;</span>
+
+<span class="sd">        NB. We validate against the min &amp; max input values, but we do NOT check that inputs lie in valid cells of the</span>
+<span class="sd">        convex hull</span>
+
+<span class="sd">        :param input_arr: Band values to be validated</span>
+<span class="sd">        :return: Band values after passing through validation. ValueError is raised if any values fail.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">validation_ranges</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">VALIDATION_RANGES</span>
+        <span class="k">for</span> <span class="n">band_index</span><span class="p">,</span> <span class="n">band_name</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">validation_ranges</span><span class="p">):</span>
+            <span class="n">band_value</span> <span class="o">=</span> <span class="n">input_arr</span><span class="p">[</span><span class="n">band_index</span><span class="p">]</span>
+            <span class="k">if</span> <span class="n">validation_ranges</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">band_name</span><span class="p">)</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;min&quot;</span><span class="p">)</span> <span class="o">&lt;=</span> <span class="n">band_value</span> <span class="o">&lt;=</span> <span class="n">validation_ranges</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">band_name</span><span class="p">)</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;max&quot;</span><span class="p">):</span>
+                <span class="k">continue</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                    <span class="sa">f</span><span class="s2">&quot;Band </span><span class="si">{</span><span class="n">band_name</span><span class="si">}</span><span class="s2"> failed validation because it is expected to fall in the range [</span><span class="si">{</span><span class="n">validation_ranges</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">band_name</span><span class="p">)</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;min&#39;</span><span class="p">)</span><span class="si">}</span><span class="s2">, </span><span class="si">{</span><span class="n">validation_ranges</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">band_name</span><span class="p">)</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;max&#39;</span><span class="p">)</span><span class="si">}</span><span class="s2">]&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">input_arr</span>
+
+    <span class="k">def</span> <span class="nf">_normalise</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">input_arr</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Normalise input band values to predefined ranges before passing to the neural network for calculation.</span>
+
+<span class="sd">        :param input_arr: Band values to be normalised</span>
+<span class="sd">        :return: Normalised band values</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">norm_b3</span><span class="o">.</span><span class="n">normalise</span><span class="p">(</span><span class="n">input_arr</span><span class="p">[</span><span class="mi">0</span><span class="p">]),</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">norm_b4</span><span class="o">.</span><span class="n">normalise</span><span class="p">(</span><span class="n">input_arr</span><span class="p">[</span><span class="mi">1</span><span class="p">]),</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">norm_b5</span><span class="o">.</span><span class="n">normalise</span><span class="p">(</span><span class="n">input_arr</span><span class="p">[</span><span class="mi">2</span><span class="p">]),</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">norm_b6</span><span class="o">.</span><span class="n">normalise</span><span class="p">(</span><span class="n">input_arr</span><span class="p">[</span><span class="mi">3</span><span class="p">]),</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">norm_b7</span><span class="o">.</span><span class="n">normalise</span><span class="p">(</span><span class="n">input_arr</span><span class="p">[</span><span class="mi">4</span><span class="p">]),</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">norm_b8a</span><span class="o">.</span><span class="n">normalise</span><span class="p">(</span><span class="n">input_arr</span><span class="p">[</span><span class="mi">5</span><span class="p">]),</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">norm_b11</span><span class="o">.</span><span class="n">normalise</span><span class="p">(</span><span class="n">input_arr</span><span class="p">[</span><span class="mi">6</span><span class="p">]),</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">norm_b12</span><span class="o">.</span><span class="n">normalise</span><span class="p">(</span><span class="n">input_arr</span><span class="p">[</span><span class="mi">7</span><span class="p">]),</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">norm_cos_view_zenith</span><span class="o">.</span><span class="n">normalise</span><span class="p">(</span><span class="n">input_arr</span><span class="p">[</span><span class="mi">8</span><span class="p">]),</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">norm_cos_sun_zenith</span><span class="o">.</span><span class="n">normalise</span><span class="p">(</span><span class="n">input_arr</span><span class="p">[</span><span class="mi">9</span><span class="p">]),</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">norm_cos_rel_azimuth</span><span class="o">.</span><span class="n">normalise</span><span class="p">(</span><span class="n">input_arr</span><span class="p">[</span><span class="mi">10</span><span class="p">]),</span>
+        <span class="p">])</span>
+
+    <span class="k">def</span> <span class="nf">_compute</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">normalised_arr</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">float</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Calculates normalised FAPAR from normalised input band values</span>
+
+<span class="sd">        :param normalised_arr: Normalised band values</span>
+<span class="sd">        :return: Normalised FAPAR estimate</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># Layer 1</span>
+        <span class="n">n1</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">neuron_1</span><span class="o">.</span><span class="n">forward</span><span class="p">(</span><span class="n">normalised_arr</span><span class="p">)</span>
+        <span class="n">n2</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">neuron_2</span><span class="o">.</span><span class="n">forward</span><span class="p">(</span><span class="n">normalised_arr</span><span class="p">)</span>
+        <span class="n">n3</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">neuron_3</span><span class="o">.</span><span class="n">forward</span><span class="p">(</span><span class="n">normalised_arr</span><span class="p">)</span>
+        <span class="n">n4</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">neuron_4</span><span class="o">.</span><span class="n">forward</span><span class="p">(</span><span class="n">normalised_arr</span><span class="p">)</span>
+        <span class="n">n5</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">neuron_5</span><span class="o">.</span><span class="n">forward</span><span class="p">(</span><span class="n">normalised_arr</span><span class="p">)</span>
+        <span class="n">layer_1_outputs</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">n1</span><span class="p">,</span> <span class="n">n2</span><span class="p">,</span> <span class="n">n3</span><span class="p">,</span> <span class="n">n4</span><span class="p">,</span> <span class="n">n5</span><span class="p">])</span>
+
+        <span class="c1"># Layer 2</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">neuron_6</span><span class="o">.</span><span class="n">forward</span><span class="p">(</span><span class="n">layer_1_outputs</span><span class="p">)</span></div>
+</pre></div>
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../../index.html">sentipy</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<p class="caption"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../sentipy.html">sentipy package</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../index.html">Documentation overview</a><ul>
+  <li><a href="../index.html">Module code</a><ul>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2020, Author.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 3.0.3</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>

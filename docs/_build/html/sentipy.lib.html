@@ -1,0 +1,208 @@
+
+<!DOCTYPE html>
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>sentipy.lib package &#8212; sentipy  documentation</title>
+    <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <script id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+    <script src="_static/jquery.js"></script>
+    <script src="_static/underscore.js"></script>
+    <script src="_static/doctools.js"></script>
+    <script src="_static/language_data.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="prev" title="sentipy package" href="sentipy.html" />
+   
+  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <div class="section" id="sentipy-lib-package">
+<h1>sentipy.lib package<a class="headerlink" href="#sentipy-lib-package" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="submodules">
+<h2>Submodules<a class="headerlink" href="#submodules" title="Permalink to this headline">¶</a></h2>
+</div>
+<div class="section" id="module-sentipy.lib.activations">
+<span id="sentipy-lib-activations-module"></span><h2>sentipy.lib.activations module<a class="headerlink" href="#module-sentipy.lib.activations" title="Permalink to this headline">¶</a></h2>
+<dl class="py function">
+<dt id="sentipy.lib.activations.linear">
+<code class="sig-prename descclassname">sentipy.lib.activations.</code><code class="sig-name descname">linear</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">x</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/sentipy/lib/activations.html#linear"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#sentipy.lib.activations.linear" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt id="sentipy.lib.activations.tanh">
+<code class="sig-prename descclassname">sentipy.lib.activations.</code><code class="sig-name descname">tanh</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">x</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/sentipy/lib/activations.html#tanh"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#sentipy.lib.activations.tanh" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</div>
+<div class="section" id="module-sentipy.lib.neuralnet">
+<span id="sentipy-lib-neuralnet-module"></span><h2>sentipy.lib.neuralnet module<a class="headerlink" href="#module-sentipy.lib.neuralnet" title="Permalink to this headline">¶</a></h2>
+<dl class="py class">
+<dt id="sentipy.lib.neuralnet.Neuron">
+<em class="property">class </em><code class="sig-prename descclassname">sentipy.lib.neuralnet.</code><code class="sig-name descname">Neuron</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">weights</span><span class="p">:</span> <span class="n">numpy.ndarray</span></em>, <em class="sig-param"><span class="n">bias</span><span class="p">:</span> <span class="n">float</span></em>, <em class="sig-param"><span class="n">activation</span><span class="p">:</span> <span class="n">str</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/sentipy/lib/neuralnet.html#Neuron"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#sentipy.lib.neuralnet.Neuron" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<dl class="py method">
+<dt id="sentipy.lib.neuralnet.Neuron.calculate_potential">
+<code class="sig-name descname">calculate_potential</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">input_arr</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/sentipy/lib/neuralnet.html#Neuron.calculate_potential"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#sentipy.lib.neuralnet.Neuron.calculate_potential" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="sentipy.lib.neuralnet.Neuron.forward">
+<code class="sig-name descname">forward</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">input_arr</span><span class="p">:</span> <span class="n">numpy.ndarray</span></em><span class="sig-paren">)</span> &#x2192; float<a class="reference internal" href="_modules/sentipy/lib/neuralnet.html#Neuron.forward"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#sentipy.lib.neuralnet.Neuron.forward" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>input_arr</strong> – </p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p></p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-sentipy.lib.preprocessing">
+<span id="sentipy-lib-preprocessing-module"></span><h2>sentipy.lib.preprocessing module<a class="headerlink" href="#module-sentipy.lib.preprocessing" title="Permalink to this headline">¶</a></h2>
+<dl class="py class">
+<dt id="sentipy.lib.preprocessing.Normaliser">
+<em class="property">class </em><code class="sig-prename descclassname">sentipy.lib.preprocessing.</code><code class="sig-name descname">Normaliser</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">x_min</span><span class="p">:</span> <span class="n">float</span></em>, <em class="sig-param"><span class="n">x_max</span><span class="p">:</span> <span class="n">float</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/sentipy/lib/preprocessing.html#Normaliser"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#sentipy.lib.preprocessing.Normaliser" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<dl class="py method">
+<dt id="sentipy.lib.preprocessing.Normaliser.denormalise">
+<code class="sig-name descname">denormalise</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">x</span><span class="p">:</span> <span class="n">float</span></em><span class="sig-paren">)</span> &#x2192; float<a class="reference internal" href="_modules/sentipy/lib/preprocessing.html#Normaliser.denormalise"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#sentipy.lib.preprocessing.Normaliser.denormalise" title="Permalink to this definition">¶</a></dt>
+<dd><p>Denormalise input x</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>x</strong> – input value for denormalisation</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>denormalised value</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="sentipy.lib.preprocessing.Normaliser.normalise">
+<code class="sig-name descname">normalise</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">x</span><span class="p">:</span> <span class="n">float</span></em><span class="sig-paren">)</span> &#x2192; float<a class="reference internal" href="_modules/sentipy/lib/preprocessing.html#Normaliser.normalise"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#sentipy.lib.preprocessing.Normaliser.normalise" title="Permalink to this definition">¶</a></dt>
+<dd><p>Normalise input x</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>x</strong> – input value for normalisation</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>normalised value</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-sentipy.lib">
+<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-sentipy.lib" title="Permalink to this headline">¶</a></h2>
+</div>
+</div>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="index.html">sentipy</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<p class="caption"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="sentipy.html">sentipy package</a><ul class="current">
+<li class="toctree-l2 current"><a class="reference internal" href="sentipy.html#subpackages">Subpackages</a><ul class="current">
+<li class="toctree-l3 current"><a class="current reference internal" href="#">sentipy.lib package</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#submodules">Submodules</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#module-sentipy.lib.activations">sentipy.lib.activations module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#module-sentipy.lib.neuralnet">sentipy.lib.neuralnet module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#module-sentipy.lib.preprocessing">sentipy.lib.preprocessing module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#module-sentipy.lib">Module contents</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="sentipy.html#submodules">Submodules</a></li>
+<li class="toctree-l2"><a class="reference internal" href="sentipy.html#module-sentipy.fapar">sentipy.fapar module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="sentipy.html#module-sentipy.settings">sentipy.settings module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="sentipy.html#module-sentipy">Module contents</a></li>
+</ul>
+</li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="index.html">Documentation overview</a><ul>
+  <li><a href="sentipy.html">sentipy package</a><ul>
+      <li>Previous: <a href="sentipy.html" title="previous chapter">sentipy package</a></li>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2020, Author.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 3.0.3</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+      |
+      <a href="_sources/sentipy.lib.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

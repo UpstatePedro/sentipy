@@ -11,15 +11,12 @@ Welcome to sentipy's documentation page!
 
     readme
 
-Contents
---------
-
 .. toctree::
    :maxdepth: 2
    :caption: Contents:
 
-   sentipy
-
+   sentipy/fapar
+   sentipy/settings
 
 Indices and tables
 ==================

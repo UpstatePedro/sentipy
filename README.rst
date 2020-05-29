@@ -1,7 +1,7 @@
 sentipy
 =======
 
-Python implementations of a selection of Sentinel 2 Toolbox L2 products
+Python implementations of Sentinel 2 Toolbox L2 products & spectral indices
 
 .. image:: https://github.com/UpstatePedro/sentipy/workflows/Run%20tests/badge.svg
 

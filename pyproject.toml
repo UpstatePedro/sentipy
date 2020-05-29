@@ -4,7 +4,7 @@ version = "0.1.0"
 description = "Python implementations of Sentinel 2 Toolbox L2 products & spectral indices"
 license = "GPL-3.0-only"
 authors = ["UpstatePedro"]
-readme = "README.md"
+readme = "README.rst"
 repository = "https://github.com/UpstatePedro/sentipy"
 
 [tool.poetry.dependencies]

@@ -3,14 +3,21 @@
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-Welcome to sentipy's documentation!
-===================================
+Welcome to sentipy's documentation page!
+========================================
 
 .. toctree::
-   :maxdepth: 4
+    :maxdepth: 1
+
+    readme
+
+Contents
+--------
+
+.. toctree::
+   :maxdepth: 2
    :caption: Contents:
 
-   readme
    sentipy
 
 

@@ -1,9 +1,23 @@
 sentipy
 =======
 
-Python implementation of Sentinel 2 Toolbox L2 products
+Python implementations of a selection of Sentinel 2 Toolbox L2 products
 
 .. image:: https://github.com/UpstatePedro/sentipy/workflows/Run%20tests/badge.svg
+
+Installation
+-------------
+
+The sentipy package is built & published (with enormous gratitude) using `Poetry <https://python-poetry.org/>`_
+
+.. code-block:: bash
+
+    $ pip install sentipy
+
+Usage
+-----
+
+Coming soon...
 
 Documentation
 -------------
@@ -13,3 +27,8 @@ Documentation
    :alt: Documentation Status
 
 Documentation for the project is hosted at `Read the Docs <https://sentipy.rtfd.io>`_
+
+Project status
+--------------
+
+This project is in the very early stages of development

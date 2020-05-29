@@ -1,1 +1,1 @@
-sphinx-apidoc -F -o docs sentipy
+sphinx-apidoc -f -o docs sentipy

@@ -10,7 +10,7 @@ from sentipy.lib.preprocessing import Normaliser
 from sentipy.settings import DEFAULT_BAND_SEQUENCE
 
 
-class FaparCalculator:
+class Fapar:
     VALIDATION_RANGES = {
         "B03": {
             "min": 0.,

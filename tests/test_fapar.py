@@ -1,6 +1,6 @@
 import pytest
 
-from sentipy.fapar import FaparCalculator
+from sentipy.s2_toolbox import Fapar
 import numpy as np
 
 
@@ -16,7 +16,7 @@ validation_examples = [
 
 @pytest.mark.parametrize("band_values, expected_fapar", validation_examples)
 def test_valid_inputs(band_values, expected_fapar):
-    calc = FaparCalculator()
+    calc = Fapar()
     input_arr = np.array(band_values)
     output_fapar = calc.run(input_arr)
     np.testing.assert_almost_equal(output_fapar, expected_fapar, decimal=5)
@@ -35,7 +35,7 @@ def test_valid_inputs_with_different_sequence():
     Rel_Azimuth = 0.86514
     expected_FAPAR = 0.05234725
 
-    calc = FaparCalculator()
+    calc = Fapar()
     band_sequence = [
         "COS_REL_AZIMUTH", "B03", "B04", "B05", "B06", "B07", "B8a", "B11", "B12", "COS_VIEW_ZENITH", "COS_SUN_ZENITH"
     ]
@@ -45,7 +45,7 @@ def test_valid_inputs_with_different_sequence():
 
 
 def test_normalise_min():
-    calc = FaparCalculator()
+    calc = Fapar()
     B3_min = calc.norm_b3.x_min
     B4_min = calc.norm_b4.x_min
     B5_min = calc.norm_b5.x_min
@@ -67,7 +67,7 @@ def test_normalise_min():
 
 
 def test_normalise_max():
-    calc = FaparCalculator()
+    calc = Fapar()
     B3_min = calc.norm_b3.x_max
     B4_min = calc.norm_b4.x_max
     B5_min = calc.norm_b5.x_max
@@ -89,7 +89,7 @@ def test_normalise_max():
 
 
 def test_validation_with_validate_flag():
-    calc = FaparCalculator()
+    calc = Fapar()
     # valid_inputs
     B3 = 0.066937
     B4 = 0.14317
@@ -113,7 +113,7 @@ def test_validation_with_validate_flag():
 
 
 def test_validation_without_validate_flag():
-    calc = FaparCalculator()
+    calc = Fapar()
     # valid_inputs
     B3 = 0.066937
     B4 = 0.14317

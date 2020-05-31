@@ -1,6 +1,6 @@
 """Home for the objects & logic that deal with the calculation of FAPAR
 """
-
+from abc import ABC, abstractmethod
 from typing import Union, List
 
 import numpy as np
@@ -10,53 +10,7 @@ from sentipy.lib.preprocessing import Normaliser
 from sentipy.settings import DEFAULT_BAND_SEQUENCE
 
 
-class Fapar:
-    VALIDATION_RANGES = {
-        "B03": {
-            "min": 0.,
-            "max": 0.263
-        },
-        "B04": {
-            "min": 0.,
-            "max": 0.300
-        },
-        "B05": {
-            "min": 0.,
-            "max": 0.315
-        },
-        "B06": {
-            "min": 0.,
-            "max": 0.619
-        },
-        "B07": {
-            "min": 0.004,
-            "max": 0.764
-        },
-        "B8a": {
-            "min": 0.017,
-            "max": 0.792
-        },
-        "B11": {
-            "min": 0.006,
-            "max": 0.503
-        },
-        "B12": {
-            "min": 0.,
-            "max": 0.503
-        },
-        "Cos(view zenith)": {
-            "min": 0.,
-            "max": 1.
-        },
-        "Cos(sun zenith)": {
-            "min": 0.,
-            "max": 1.
-        },
-        "Cos(rel. azimuth)": {
-            "min": -1.,
-            "max": 1.
-        },
-    }
+class S2BiophysicalCalculator(ABC):
 
     def __init__(self):
         """Calculates FAPAR from Sentinel-2 imagery
@@ -72,68 +26,22 @@ class Fapar:
         self.norm_cos_view_zenith = Normaliser(x_min=0.918595400582046, x_max=0.99999999999139)
         self.norm_cos_sun_zenith = Normaliser(x_min=0.342022871159208, x_max=0.936206429175402)
         self.norm_cos_rel_azimuth = Normaliser(x_min=-0.999999982118044, x_max=0.999999998910077)
-        self.norm_fapar = Normaliser(x_min=0.000153013463222, x_max=0.977135096979553)
+        self._initialise_output_normalisation()
+        self._initialise_network()
 
-        self.neuron_1 = Neuron(
-            weights=np.array([
-                0.268714454733421, -0.205473108029835, 0.281765694196018, 1.33744341225598, 0.390319212938497,
-                -3.61271434220335, 0.222530960987244, 0.821790549667255, -0.093664567310731, 0.019290146147447,
-                0.037364446377188,
-            ]),
-            bias=-0.88706836404028,
-            activation='tansig'
-        )
-        self.neuron_2 = Neuron(
-            weights=np.array([
-                -0.248998054599707, -0.571461305473124, -0.369957603466673, 0.246031694650909, 0.332536215252841,
-                0.438269896208887, 0.81900055189045, -0.93493149905931, 0.082716247651866, -0.286978634108328,
-                -0.035890968351662
-            ]),
-            bias=0.320126471197199,
-            activation='tansig'
-        )
-        self.neuron_3 = Neuron(
-            weights=np.array([
-                -0.16406357531588, -0.126303285737763, -0.253670784366822, -0.321162835049381, 0.06708228797358,
-                2.02983228865526, -0.023141228827722, -0.553176625657559, 0.059285451897783, -0.034334454541432,
-                -0.031776704097009
-            ]),
-            bias=0.610523702500117,
-            activation='tansig'
-        )
-        self.neuron_4 = Neuron(
-            weights=np.array([
-                0.130240753003835, 0.236781035723321, 0.131811664093253, -0.250181799267664, -0.011364149953286,
-                -1.85757321463352, -0.146860751013916, 0.528008831372352, -0.046230769098303, -0.034509608392235,
-                0.031884395036004
-            ]),
-            bias=-0.379156190833946,
-            activation='tansig'
-        )
-        self.neuron_5 = Neuron(
-            weights=np.array([
-                -0.029929946166941, 0.795804414040809, 0.348025317624568, 0.943567007518504, -0.276341670431501,
-                -2.94659418014259, 0.2894830735075, 1.04400695044018, -0.000413031960419, 0.403331114840215,
-                0.068427130526696
-            ]),
-            bias=1.35302339669057,
-            activation='tansig'
-        )
+    @abstractmethod
+    def _initialise_output_normalisation(self):
+        self.norm_output = None
 
-        self.neuron_6 = Neuron(
-            weights=np.array([
-                2.12603881106449, -0.632044932794919, 5.59899578720625, 1.77044414057897, -0.267879583604849
-            ]),
-            bias=-0.336431283973339,
-            activation='linear'
-        )
-
-        self.network = Network(
-            hidden_layers=(
-                [self.neuron_1, self.neuron_2, self.neuron_3, self.neuron_4, self.neuron_5],
-            ),
-            output_neuron=self.neuron_6
-        )
+    @abstractmethod
+    def _initialise_network(self):
+        self.neuron_1 = None
+        self.neuron_2 = None
+        self.neuron_3 = None
+        self.neuron_4 = None
+        self.neuron_5 = None
+        self.neuron_6 = None
+        self.network = None
 
     def run(self, input_arr: np.ndarray, band_sequence: List[str] = DEFAULT_BAND_SEQUENCE, validate: bool = True) -> \
             Union[float, np.float]:
@@ -159,7 +67,7 @@ class Fapar:
         :param input_arr: Input values for the calculator to use
         :param band_sequence: Names of bands included in the input array (names must match those used above for the required bands)
         :param validate: Flag for whether or not to apply validation ranges to the inputs
-        :return: Scalar estimate of FAPAR for the input array
+        :return: Scalar estimate of the biophysical property
         """
         band_idxs = [band_sequence.index(elem) for elem in DEFAULT_BAND_SEQUENCE]
         ordered_arr = np.array([input_arr[idx] for idx in band_idxs])
@@ -167,7 +75,7 @@ class Fapar:
             ordered_arr = self._validate(ordered_arr)
         normalised_arr = self._normalise(ordered_arr)
         y_norm = self._compute(normalised_arr)
-        y = self.norm_fapar.denormalise(y_norm)
+        y = self.norm_output.denormalise(y_norm)
         return y
 
     def _validate(self, input_arr: np.ndarray) -> np.ndarray:
@@ -216,3 +124,191 @@ class Fapar:
         :return: Normalised FAPAR estimate
         """
         return self.network.forward(normalised_arr)
+
+
+class Fapar(S2BiophysicalCalculator):
+    VALIDATION_RANGES = {
+        "B03": {
+            "min": 0.,
+            "max": 0.263
+        },
+        "B04": {
+            "min": 0.,
+            "max": 0.300
+        },
+        "B05": {
+            "min": 0.,
+            "max": 0.315
+        },
+        "B06": {
+            "min": 0.,
+            "max": 0.619
+        },
+        "B07": {
+            "min": 0.004,
+            "max": 0.764
+        },
+        "B8a": {
+            "min": 0.017,
+            "max": 0.792
+        },
+        "B11": {
+            "min": 0.006,
+            "max": 0.503
+        },
+        "B12": {
+            "min": 0.,
+            "max": 0.503
+        },
+        "Cos(view zenith)": {
+            "min": 0.,
+            "max": 1.
+        },
+        "Cos(sun zenith)": {
+            "min": 0.,
+            "max": 1.
+        },
+        "Cos(rel. azimuth)": {
+            "min": -1.,
+            "max": 1.
+        },
+    }
+
+    def _initialise_network(self):
+        self.neuron_1 = Neuron(
+            weights=np.array([
+                0.268714454733421, -0.205473108029835, 0.281765694196018, 1.33744341225598, 0.390319212938497,
+                -3.61271434220335, 0.222530960987244, 0.821790549667255, -0.093664567310731, 0.019290146147447,
+                0.037364446377188,
+            ]),
+            bias=-0.88706836404028,
+            activation='tansig'
+        )
+        self.neuron_2 = Neuron(
+            weights=np.array([
+                -0.248998054599707, -0.571461305473124, -0.369957603466673, 0.246031694650909, 0.332536215252841,
+                0.438269896208887, 0.81900055189045, -0.93493149905931, 0.082716247651866, -0.286978634108328,
+                -0.035890968351662
+            ]),
+            bias=0.320126471197199,
+            activation='tansig'
+        )
+        self.neuron_3 = Neuron(
+            weights=np.array([
+                -0.16406357531588, -0.126303285737763, -0.253670784366822, -0.321162835049381, 0.06708228797358,
+                2.02983228865526, -0.023141228827722, -0.553176625657559, 0.059285451897783, -0.034334454541432,
+                -0.031776704097009
+            ]),
+            bias=0.610523702500117,
+            activation='tansig'
+        )
+        self.neuron_4 = Neuron(
+            weights=np.array([
+                0.130240753003835, 0.236781035723321, 0.131811664093253, -0.250181799267664, -0.011364149953286,
+                -1.85757321463352, -0.146860751013916, 0.528008831372352, -0.046230769098303, -0.034509608392235,
+                0.031884395036004
+            ]),
+            bias=-0.379156190833946,
+            activation='tansig'
+        )
+        self.neuron_5 = Neuron(
+            weights=np.array([
+                -0.029929946166941, 0.795804414040809, 0.348025317624568, 0.943567007518504, -0.276341670431501,
+                -2.94659418014259, 0.2894830735075, 1.04400695044018, -0.000413031960419, 0.403331114840215,
+                0.068427130526696
+            ]),
+            bias=1.35302339669057,
+            activation='tansig'
+        )
+        self.neuron_6 = Neuron(
+            weights=np.array([
+                2.12603881106449, -0.632044932794919, 5.59899578720625, 1.77044414057897, -0.267879583604849
+            ]),
+            bias=-0.336431283973339,
+            activation='linear'
+        )
+        self.network = Network(
+            hidden_layers=(
+                [self.neuron_1, self.neuron_2, self.neuron_3, self.neuron_4, self.neuron_5],
+            ),
+            output_neuron=self.neuron_6
+        )
+
+    def _initialise_output_normalisation(self):
+        self.norm_output = Normaliser(x_min=0.000153013463222, x_max=0.977135096979553)
+
+
+class Fcover(S2BiophysicalCalculator):
+
+    def _initialise_network(self):
+        self.neuron_1 = Neuron(
+            weights=np.array([
+                -0.156854264840505, 0.124234528461836, 0.235625516228529, -1.83239102580498, -0.217188969888118,
+                5.06933958064326, -0.88757800815474, -1.08084681669584, -0.032316704186389, -0.224476137358619,
+                -0.195523962947318
+            ]),
+            bias=-1.45261652205846,
+            activation='tansig'
+        )
+        self.neuron_2 = Neuron(
+            weights=np.array([
+                -0.220824927841957, 1.28595395486941, 0.70313948636251, -1.34481216664598, -1.96881267558705,
+                -1.45444681638688, 1.0273756004279, -0.124946415319548, 0.080276243726516, -0.198705918577447,
+                0.108527100526934
+            ]),
+            bias=-1.70417477557288,
+            activation='tansig'
+        )
+        self.neuron_3 = Neuron(
+            weights=np.array([
+                -0.409688743280695, 1.08858884765636, 0.362845225540078, 0.036939050970548, -0.348012590003251,
+                -2.00352618809814, 0.041035760175655, 1.22373853174142, -0.012408277828702, -0.282223364523503,
+                0.099499311755661
+            ]),
+            bias=1.02168965848613,
+            activation='tansig'
+        )
+        self.neuron_4 = Neuron(
+            weights=np.array([
+                -0.188970957866161, -0.035862184083284, 0.005512485281073, 1.35391570802373, -0.739689896116339,
+                -2.21719530107254, 0.313216124198161, 1.50201689149522, 1.21530490194501, -0.421938358618199,
+                1.48852484546637
+            ]),
+            bias=-0.49800281020533,
+            activation='tansig'
+        )
+        self.neuron_5 = Neuron(
+            weights=np.array([
+                2.4929399370874, -4.40511331388413, -1.91062012624287, -0.703174115574677, -0.215104721137593,
+                -0.972151494817506, -0.930752241278312, 1.21434418759821, -0.521665460191844, -0.445755955597775,
+                0.344111873776809
+            ]),
+            bias=-3.88922154789449,
+            activation='tansig'
+        )
+        self.neuron_6 = Neuron(
+            weights=np.array([
+                0.230805867649849, -0.333655484884161, -0.499418292324876, 0.047248439674868, -0.079851654073939
+            ]),
+            bias=-0.096799814781108,
+            activation='linear'
+        )
+        self.network = Network(
+            hidden_layers=(
+                [self.neuron_1, self.neuron_2, self.neuron_3, self.neuron_4, self.neuron_5],
+            ),
+            output_neuron=self.neuron_6
+        )
+
+    def _initialise_output_normalisation(self):
+        self.norm_output = Normaliser(x_min=0.000181230723879, x_max=0.999638214714515)
+
+    def _validate(self, input_arr: np.ndarray) -> np.ndarray:
+        """Validate input band values against the 'definition domain for inputs'
+
+        NB. There is no definition domain for inputs available in the FCOVER data, so no validation is applied here
+
+        :param input_arr: Band values to be validated
+        :return: Band values after passing through validation. ValueError is raised if any values fail.
+        """
+        return input_arr

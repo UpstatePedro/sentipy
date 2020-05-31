@@ -5,7 +5,7 @@ from typing import Union, List
 
 import numpy as np
 
-from sentipy.lib.neuralnet import Neuron
+from sentipy.lib.neuralnet import Neuron, Network
 from sentipy.lib.preprocessing import Normaliser
 from sentipy.settings import DEFAULT_BAND_SEQUENCE
 
@@ -128,8 +128,15 @@ class FaparCalculator:
             activation='linear'
         )
 
+        self.network = Network(
+            hidden_layers=(
+                [self.neuron_1, self.neuron_2, self.neuron_3, self.neuron_4, self.neuron_5],
+            ),
+            output_neuron=self.neuron_6
+        )
+
     def run(self, input_arr: np.ndarray, band_sequence: List[str] = DEFAULT_BAND_SEQUENCE, validate: bool = True) -> \
-    Union[float, np.float]:
+            Union[float, np.float]:
         """Run the calculator on an input array
 
         By default, the calculator expects only the following bands to be passed in the sequence below:
@@ -208,13 +215,4 @@ class FaparCalculator:
         :param normalised_arr: Normalised band values
         :return: Normalised FAPAR estimate
         """
-        # Layer 1
-        n1 = self.neuron_1.forward(normalised_arr)
-        n2 = self.neuron_2.forward(normalised_arr)
-        n3 = self.neuron_3.forward(normalised_arr)
-        n4 = self.neuron_4.forward(normalised_arr)
-        n5 = self.neuron_5.forward(normalised_arr)
-        layer_1_outputs = np.array([n1, n2, n3, n4, n5])
-
-        # Layer 2
-        return self.neuron_6.forward(layer_1_outputs)
+        return self.network.forward(normalised_arr)

@@ -11,10 +11,10 @@ sentipy.settings
    :noindex:
 
 
-sentipy.fapar
+sentipy.s2_toolbox
 -------------
 
-.. automodule:: sentipy.fapar
+.. automodule:: sentipy.s2_toolbox
    :members:
    :undoc-members:
    :show-inheritance:

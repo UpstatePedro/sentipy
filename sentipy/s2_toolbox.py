@@ -13,8 +13,12 @@ from sentipy.settings import DEFAULT_BAND_SEQUENCE
 class S2BiophysicalCalculator(ABC):
 
     def __init__(self):
-        """Calculates FAPAR from Sentinel-2 imagery
+        """Calculates BioPhysical property values from Sentinel-2 imagery as per the S2 toolbox products
         """
+        self._initialise_normalisation()
+        self._initialise_network()
+
+    def _initialise_normalisation(self):
         self.norm_b3 = Normaliser(x_min=0., x_max=0.253061520471542)
         self.norm_b4 = Normaliser(x_min=0., x_max=0.290393577911328)
         self.norm_b5 = Normaliser(x_min=0., x_max=0.305398915248555)
@@ -27,14 +31,21 @@ class S2BiophysicalCalculator(ABC):
         self.norm_cos_sun_zenith = Normaliser(x_min=0.342022871159208, x_max=0.936206429175402)
         self.norm_cos_rel_azimuth = Normaliser(x_min=-0.999999982118044, x_max=0.999999998910077)
         self._initialise_output_normalisation()
-        self._initialise_network()
 
     @abstractmethod
     def _initialise_output_normalisation(self):
+        """Define the normalisation parameters on the output to return outputs into the natural range of values
+
+        MUST be overridden in concrete child classes.
+        """
         self.norm_output = None
 
     @abstractmethod
     def _initialise_network(self):
+        """Define the network structure & parameterisation
+
+        MUST be overridden in concrete child classes
+        """
         self.neuron_1 = None
         self.neuron_2 = None
         self.neuron_3 = None
@@ -97,24 +108,24 @@ class S2BiophysicalCalculator(ABC):
                     f"Band {band_name} failed validation because it is expected to fall in the range [{validation_ranges.get(band_name).get('min')}, {validation_ranges.get(band_name).get('max')}]")
         return input_arr
 
-    def _normalise(self, input_arr: np.ndarray) -> np.ndarray:
+    def _normalise(self, band_values: np.ndarray) -> np.ndarray:
         """Normalise input band values to predefined ranges before passing to the neural network for calculation.
 
-        :param input_arr: Band values to be normalised
+        :param band_values: Band values to be normalised
         :return: Normalised band values
         """
         return np.array([
-            self.norm_b3.normalise(input_arr[0]),
-            self.norm_b4.normalise(input_arr[1]),
-            self.norm_b5.normalise(input_arr[2]),
-            self.norm_b6.normalise(input_arr[3]),
-            self.norm_b7.normalise(input_arr[4]),
-            self.norm_b8a.normalise(input_arr[5]),
-            self.norm_b11.normalise(input_arr[6]),
-            self.norm_b12.normalise(input_arr[7]),
-            self.norm_cos_view_zenith.normalise(input_arr[8]),
-            self.norm_cos_sun_zenith.normalise(input_arr[9]),
-            self.norm_cos_rel_azimuth.normalise(input_arr[10]),
+            self.norm_b3.normalise(band_values[0]),
+            self.norm_b4.normalise(band_values[1]),
+            self.norm_b5.normalise(band_values[2]),
+            self.norm_b6.normalise(band_values[3]),
+            self.norm_b7.normalise(band_values[4]),
+            self.norm_b8a.normalise(band_values[5]),
+            self.norm_b11.normalise(band_values[6]),
+            self.norm_b12.normalise(band_values[7]),
+            self.norm_cos_view_zenith.normalise(band_values[8]),
+            self.norm_cos_sun_zenith.normalise(band_values[9]),
+            self.norm_cos_rel_azimuth.normalise(band_values[10]),
         ])
 
     def _compute(self, normalised_arr: np.ndarray) -> np.float:
@@ -312,3 +323,117 @@ class Fcover(S2BiophysicalCalculator):
         :return: Band values after passing through validation. ValueError is raised if any values fail.
         """
         return input_arr
+
+
+class CanopyWater(S2BiophysicalCalculator):
+
+    VALIDATION_RANGES = {
+        "B03": {
+            "min": 0.,
+            "max": 0.263
+        },
+        "B04": {
+            "min": 0.,
+            "max": 0.300
+        },
+        "B05": {
+            "min": 0.,
+            "max": 0.315
+        },
+        "B06": {
+            "min": 0.,
+            "max": 0.619
+        },
+        "B07": {
+            "min": 0.004,
+            "max": 0.764
+        },
+        "B8a": {
+            "min": 0.017,
+            "max": 0.792
+        },
+        "B11": {
+            "min": 0.006,
+            "max": 0.503
+        },
+        "B12": {
+            "min": 0.,
+            "max": 0.503
+        },
+        "Cos(view zenith)": {
+            "min": 0.,
+            "max": 1.
+        },
+        "Cos(sun zenith)": {
+            "min": 0.,
+            "max": 1.
+        },
+        "Cos(rel. azimuth)": {
+            "min": -1.,
+            "max": 1.
+        },
+    }
+
+    def _initialise_output_normalisation(self):
+        self.norm_output = Normaliser(x_min=0.00000385066859365878, x_max=0.522417054644758)
+
+    def _initialise_network(self):
+        self.neuron_1 = Neuron(
+            weights=np.array([
+                0.146378710426108, 1.18979928186603, -0.906235139963469, -0.808337508767272, -0.973334917830317,
+                -1.42591277645983, -0.005612536295883, -0.634520356266989, -0.117226059988763, -0.060270091210205,
+                0.229407587131601
+
+            ]),
+            bias=-2.10640836859515,
+            activation='tansig'
+        )
+        self.neuron_2 = Neuron(
+            weights=np.array([
+                0.283319173374232, 0.14934202304068, 1.08480588386826, -0.138658791034905, -0.455759407328658,
+                0.420571438077985, -1.73729490369704, -0.704286287225911, 0.01909537823579, -0.039397131651267,
+                -0.007502415817443
+            ]),
+            bias=-1.69022094794167,
+            activation='tansig'
+        )
+        self.neuron_3 = Neuron(
+            weights=np.array([
+                -0.197487427943115, -0.105460325978344, 0.158347670680985, 2.14912426653839, -0.970716842915524,
+                -4.92725317908744, 1.42034301781109, 1.45316917225712, 0.022725705360916, 0.269298650421124,
+                0.084904765771522
+            ]),
+            bias=3.10117655254553,
+            activation='tansig'
+        )
+        self.neuron_4 = Neuron(
+            weights=np.array([
+                0.141405799762781, 0.333862603279641, 0.356218929122853, -0.545942267638804, 0.089104307685555,
+                0.919298362928991, -1.85208926250394, -0.427539590778633, 0.007913856464675, 0.014833320147784,
+                -0.001537867697355
+            ]),
+            bias=-1.31231626495557,
+            activation='tansig'
+        )
+        self.neuron_5 = Neuron(
+            weights=np.array([
+                -0.186781083395016, -0.549163704900838, -0.181287638772104, 0.968640436559575, -0.470442559117241,
+                -1.24859725243601, 2.67014942338173, 0.490090624379901, -0.001449319395262, 0.003148293696923,
+                0.020651788389291
+            ]),
+            bias=1.01131930348399,
+            activation='tansig'
+        )
+        self.neuron_6 = Neuron(
+            weights=np.array([
+                -0.077555589034682, -0.86411786118988, -0.199212415373717, 1.98730461218687, 0.458926743488878
+            ]),
+            bias=-0.197591709976582,
+            activation='linear'
+        )
+        self.network = Network(
+            hidden_layers=(
+                [self.neuron_1, self.neuron_2, self.neuron_3, self.neuron_4, self.neuron_5],
+            ),
+            output_neuron=self.neuron_6
+        )

@@ -28,6 +28,7 @@ def test_validation_with_validate_flag():
     with pytest.raises(ValueError, match=r".* B07 .* [0.0, 1.0]"):
         canopy_water = calc.run(input_arr, validate=True)
 
+
 def test_validation_without_validate_flag():
     calc = CanopyWater()
     # valid_inputs

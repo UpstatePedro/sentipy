@@ -1,4 +1,4 @@
-Welcome to sentipy's documentation page!
+Welcome to sentipy's documentation page
 ========================================
 
 .. toctree::

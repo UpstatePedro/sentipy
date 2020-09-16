@@ -28,14 +28,26 @@ Our preferred method for loading Sentinel imagery is to use the `rasterio <https
 
 .. code-block:: python
 
-    # Initialise whichever calculator you wish to use
-    calc = Fapar()
+    from sentipy import s2_toolbox
+    import rasterio
 
-    # We're assuming here that you've loaded all the band values into a list called `band_values`
-    input_arr = np.array(band_values)
+    with rasterio.open('example.tif') as dataset:
+        # read your bands in & stack them into a single array here
+        input_arr = np.stack(
+            [
+                dataset.read(1),
+                dataset.read(2),
+                dataset.read(3),
+                # ...
+                # and you'll need the image meta-data here too: view zenith, sun zenith, rel azimuth
+            ]
+            , axis=0
+        )
 
+    # Initialise whichever calculator you wish to use, eg the Fapar calculator:
+    calculator = s2_toolbox.Fapar()
     # All you have to do is call the calculator's `.run()` method on the input array and you'll get an output array of
     # matching size (but not shape) with your calculated value(s)
-    output_fapar = calc.run(input_arr)
+    fapar = calculator.run(input_arr)
 
 And that's really all there is to it!

@@ -19,6 +19,7 @@ class S2BiophysicalCalculator(ABC):
         self._initialise_network()
 
     def _initialise_normalisation(self):
+        """Initialise the Normalisers to preprocess inputs according to the expected/validated minimums & maximums"""
         self.norm_b3 = Normaliser(x_min=0., x_max=0.253061520471542)
         self.norm_b4 = Normaliser(x_min=0., x_max=0.290393577911328)
         self.norm_b5 = Normaliser(x_min=0., x_max=0.305398915248555)
@@ -59,17 +60,18 @@ class S2BiophysicalCalculator(ABC):
         """Run the calculator on an input array
 
         By default, the calculator expects only the following bands to be passed in the sequence below:
-        B03
-        B04
-        B05
-        B06
-        B07
-        B8a
-        B11
-        B12
-        COS_VIEW_ZENITH
-        COS_SUN_ZENITH
-        COS_REL_AZIMUTH
+
+        - B03
+        - B04
+        - B05
+        - B06
+        - B07
+        - B8a
+        - B11
+        - B12
+        - COS_VIEW_ZENITH
+        - COS_SUN_ZENITH
+        - COS_REL_AZIMUTH
 
         If band values are to be passed in a different set or sequence, the band_sequence parameter must be passed with
         band names (matching those above) for each element in the input array.
@@ -138,6 +140,8 @@ class S2BiophysicalCalculator(ABC):
 
 
 class Fapar(S2BiophysicalCalculator):
+    """Calculator for the Fapar biophysical parameter; the fraction of photosynthetically-active radiation absorbed (by vegetation)."""
+
     VALIDATION_RANGES = {
         "B03": {
             "min": 0.,
@@ -250,6 +254,7 @@ class Fapar(S2BiophysicalCalculator):
 
 
 class Fcover(S2BiophysicalCalculator):
+    """Calculator for the Fcover biophysical parameter; the fraction of ground covered by vegetation."""
 
     def _initialise_network(self):
         self.neuron_1 = Neuron(
@@ -326,6 +331,7 @@ class Fcover(S2BiophysicalCalculator):
 
 
 class CanopyWater(S2BiophysicalCalculator):
+    """Calculator for the Canopy Water biophysical parameter."""
 
     VALIDATION_RANGES = {
         "B03": {
